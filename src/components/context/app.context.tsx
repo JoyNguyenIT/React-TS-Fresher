@@ -1,11 +1,14 @@
-import { createContext, useContext, useState } from "react";
+import { fetchAccountAPI } from "@/services/api";
+import { createContext, useContext, useEffect, useState } from "react";
+import { PacmanLoader } from "react-spinners";
 
 interface IAppContext {
     isAuthenticated: boolean,
     isLoading: boolean
     user: IUser | null,
+    urlAvatar: string,
     setIsAuthenticated: (v: boolean) => void,
-    setUser: (v: IUser) => void
+    setUser: (v: IUser | null) => void
     setIsLoading: (v: boolean) => void
 }
 
@@ -18,17 +21,57 @@ interface TProp {
 
 
 export const AppProvider = (props: TProp) => {
-
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
     const [user, setUser] = useState<IUser | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(true)
+    const urlAvatar = `${import.meta.env.VITE_BACKEND_URL}/images/avatar/${user?.avatar}`;
+
+
+
+    useEffect(() => {
+        const fetchAccount = async () => {
+            const res = await fetchAccountAPI()
+            const delay = (ms: number): Promise<void> => {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            if (res.data) {
+                await delay(1000)
+                setIsAuthenticated(true)
+                setUser(res.data.user)
+            }
+            setIsLoading(false);
+        }
+        fetchAccount()
+    }, [])
     return (
-        <CurrentAppContext.Provider value={{
-            isAuthenticated, user, setIsAuthenticated, setUser, isLoading, setIsLoading
-        }} >
-            {props.children}
-        </CurrentAppContext.Provider>
+        <>
+            {isLoading === false ?
+                <CurrentAppContext.Provider value={{
+                    isAuthenticated, user, setIsAuthenticated, setUser, isLoading, setIsLoading, urlAvatar
+                }} >
+                    {props.children}
+                </CurrentAppContext.Provider>
+                :
+                <div style={{
+                    position: "fixed",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%"
+                }
+                }>
+                    <PacmanLoader
+                        color={"#99D9F2"}
+                        loading={isLoading}
+                        cssOverride={{}}
+                        size={25}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                    />
+                </div>
+            }
+        </>
     );
+
 };
 
 export const useCurrentApp = () => {

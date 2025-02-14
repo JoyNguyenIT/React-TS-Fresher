@@ -4,8 +4,8 @@ export { };
 declare global {
     interface IBackendRes<T> {
         error?: string | string[];
-        message: string;
-        statusCode: number | string;
+        message?: string;
+        statusCode?: number | string;
         data?: T;
     }
     interface IModelPaginate<T> {
@@ -15,7 +15,7 @@ declare global {
             pages: number;
             total: number;
         },
-        results: T[]
+        result: T[]
 
     }
     interface IRegister {
@@ -39,5 +39,48 @@ declare global {
 
     interface IFetchAccount {
         user: IUser
+    }
+    interface ILogOut {
+        data: string
+    }
+
+    interface IUserTable {
+        _id: string,
+        fullName: string,
+        email: string,
+        phone: string,
+        role: string,
+        avatar: string,
+        isActive: boolean,
+        createdAt: Date,
+        updatedAt: Date
+    }
+
+    interface IImportUser {
+        countSuccess: number,
+        countError: number,
+        detail: any
+    }
+
+    interface IDataImport {
+        fullName: string;
+        email: string;
+        password: string;
+        phone: string;
+
+    }
+
+    interface IBookTable {
+        _id: string,
+        thumbnail: string,
+        slider: string[],
+        mainText: string,
+        author: string,
+        price: number,
+        sold: number,
+        quantity: number,
+        category: string,
+        createdAt: Date,
+        updatedAt: Date,
     }
 }
