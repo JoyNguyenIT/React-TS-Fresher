@@ -1,4 +1,4 @@
-import { FieldType } from "antd/es/upload/interface"
+
 import axios from "services/axios.customize"
 
 export const registerAPI = (fullName: string, email: string, password: string, phone: string) => {
@@ -64,7 +64,11 @@ export const DeleteUserAPI = (_id: string) => {
 
 export const getBooksTableAPI = (query: string) => {
     const urlBackend = `/api/v1/book?${query}`;
-    return axios.get<IBackendRes<IModelPaginate<IBookTable>>>(urlBackend)
+    return axios.get<IBackendRes<IModelPaginate<IBookTable>>>(urlBackend, {
+        headers: {
+            delay: 3000
+        }
+    })
 }
 
 export const getCategoryBook = () => {

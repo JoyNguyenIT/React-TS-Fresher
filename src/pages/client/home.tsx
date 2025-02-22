@@ -1,34 +1,39 @@
 import { FilterTwoTone, RedoOutlined, ReloadOutlined } from "@ant-design/icons"
 import 'styles/home.scss'
-import { Button, Checkbox, Col, Divider, Flex, Form, Image, InputNumber, Pagination, Rate, Row, Tabs } from 'antd';
-import type { GetProp } from 'antd';
+import { Button, Checkbox, Col, Divider, Flex, Form, Image, InputNumber, Pagination, Rate, Row, Spin, Tabs } from 'antd';
+import type { FormProps, GetProp } from 'antd';
 import { useForm } from "antd/es/form/Form";
 import { TabsProps } from "antd/lib";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getBooksTableAPI, getCategoryBook } from "@/services/api";
 
-const onChange: GetProp<typeof Checkbox.Group, 'onChange'> = (checkedValues) => {
-    console.log('checked = ', checkedValues);
+type FieldType = {
+    range: {
+        from: number;
+        to: number
+    }
+    category: string[]
 };
 
 const items: TabsProps['items'] = [
     {
-        key: '1',
-        label: 'Phổ biến',
+        key: "sort=-sold",
+        label: `Phổ biến`,
         children: <></>,
     },
     {
-        key: '2',
-        label: 'Hàng mới',
+        key: 'sort=-updatedAt',
+        label: `Hàng Mới`,
         children: <></>,
     },
     {
-        key: '3',
-        label: 'Giá thấp đến cao',
+        key: 'sort=price',
+        label: `Giá Thấp Đến Cao`,
         children: <></>,
     },
     {
-        key: '4',
-        label: 'Giá cao đến thấp',
+        key: 'sort=-price',
+        label: `Giá Cao Đến Thấp`,
         children: <></>,
     },
 ];
@@ -37,103 +42,113 @@ const items: TabsProps['items'] = [
 
 const HomePage = () => {
     const [form] = Form.useForm()
-    const [listBook, setListBook] = useState([
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
-        },
-        {
-            _id: '675c479e554d6cdd4fcf3a8b',
-            mainText: 'Tư Duy Về Tiền Bạc - Những Lựa Chọn Tài Chính Đúng Đắn Và Sáng Suốt Hơn',
-            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/3-931186dd6dcd231da1032c8220332fea.jpg`,
-            slider: [],
-            author: "",
-            price: 70000,
-            sold: 1000,
-            quantity: 0,
-            category: "",
+    const [listBook, setListBook] = useState<IBookTable[]>([]);
+    const [meta, setMeta] = useState({
+        current: 1,
+        pageSize: 5,
+        pages: 0,
+        total: 0
+    });
+    const [listCategory, setListCategory] = useState<String[]>([]);
+    const [currentPage, setCurrentPage] = useState<number>(1)
+    const [pageSize, setPageSize] = useState<number>(5)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [checkedCategory, setCheckedCategory] = useState<String>()
+    const [rangePriceFilter, setRangePriceFilter] = useState<String>()
+    const [activeKeyTab, setActiveKeyTab] = useState<String>()
+    const fetchBookPaginate = async () => {
+        setIsLoading(true)
+        let query = `current=${currentPage}&pageSize=${pageSize}`
+        if (rangePriceFilter) {
+            query += rangePriceFilter
         }
-    ]);
+        if (checkedCategory) {
+            query += checkedCategory
+        }
+        if (activeKeyTab) {
+            query += `&${activeKeyTab}`
+        }
+        else {
+            query += '&sort=-sold'
+        }
+        const res = await getBooksTableAPI(query)
+        if (res && res.data) {
+            setMeta(res.data.meta)
+            setListBook(res.data.result)
+        }
+
+        setIsLoading(false)
+    }
+
+    useEffect(() => {
+        const fectchCategory = async () => {
+            const res = await getCategoryBook()
+            if (res && res.data) {
+                setListCategory(res.data)
+            }
+        }
+        fectchCategory()
+    }, [])
+
+    useEffect(() => {
+        fetchBookPaginate()
+    }, [pageSize, currentPage, checkedCategory, rangePriceFilter, activeKeyTab])
+    const handleChangePage = (page: number, size: number) => {
+        if (page !== currentPage) setCurrentPage(page)
+        if (size !== pageSize) setPageSize(size)
+    }
+
+    const handleChangeFilter = (values: string[]) => {
+        if (values && values.length > 0) {
+            const valuesChecked = values.join(',');
+            setCheckedCategory(`&category=${valuesChecked}`)
+        }
+        else {
+            setCheckedCategory('')
+        }
+    }
+
+    const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+        if (values && values.range.to >= 0 && values.range.from >= 0) {
+            setRangePriceFilter(`&price>=${values?.range?.from}&price<=${values?.range?.to}`)
+        }
+        else {
+            setRangePriceFilter('')
+        }
+    };
+
+    const handleResetForm = () => {
+        setCheckedCategory('')
+        setRangePriceFilter('')
+        form.resetFields();
+    }
+
+    const handleChangeTab = (activeKey: string) => {
+        setActiveKeyTab(activeKey)
+    }
+
     return (
         <>
             <div className="homepage-content" >
-                <Row gutter={[20, 20]}>
-                    <Col md={4} sm={0} xs={0} style={{ border: '1px solid red' }}>
-                        <div style={{ maxWidth: 1440, padding: '10px' }}>
+                <Row gutter={[20, 20]} style={{ backgroundColor: '#efefef' }}>
+                    <Col md={4} sm={0} xs={0} style={{ padding: '20px' }}>
+                        <div style={{ maxWidth: 1440, padding: '10px', borderRadius: '5px', backgroundColor: '#fff', marginLeft: '10px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>
                                     <FilterTwoTone />
-                                    <span>Bộ lọc tìm kiếm</span>
+                                    <span style={{ fontWeight: '500' }}>Bộ lọc tìm kiếm</span>
                                 </span>
-                                <ReloadOutlined title="reset" />
+                                <ReloadOutlined
+                                    title="reset"
+                                    onClick={() => handleResetForm()}
+                                    style={{ cursor: 'pointer' }}
+                                />
                             </div>
-
+                            <Divider />
                             <Form
                                 form={form}
                                 style={{ maxWidth: 600 }}
-
+                                onFinish={onFinish}
                             >
                                 <Form.Item
                                     name="category"
@@ -141,26 +156,19 @@ const HomePage = () => {
                                     labelCol={{ span: 24 }}
                                 >
                                     <div>
-                                        <Checkbox.Group style={{ width: '100%' }} onChange={onChange}>
-                                            <Row>
-                                                <Col span={24}>
-                                                    <Checkbox value="A">A</Checkbox>
-                                                </Col>
-                                                <Col span={24}>
-                                                    <Checkbox value="B">B</Checkbox>
-                                                </Col>
-                                                <Col span={24}>
-                                                    <Checkbox value="C">C</Checkbox>
-                                                </Col>
-                                                <Col span={24}>
-                                                    <Checkbox value="D">D</Checkbox>
-                                                </Col>
-                                                <Col span={24}>
-                                                    <Checkbox value="E">E</Checkbox>
-                                                </Col>
-                                                <Col span={24}>
-                                                    <Checkbox value="E">E</Checkbox>
-                                                </Col>
+                                        <Checkbox.Group
+                                            style={{ width: '100%' }}
+                                            onChange={(checkedValue) => handleChangeFilter(checkedValue)}
+                                        >
+                                            <Row gutter={[15, 15]}>
+                                                {listCategory?.map((item) => {
+                                                    return (
+                                                        <Col span={24} key={`${item}-category`}>
+                                                            <Checkbox value={`${item}`}>{item}</Checkbox>
+                                                        </Col>
+                                                    )
+                                                })}
+
                                             </Row>
                                         </Checkbox.Group>
                                     </div>
@@ -173,25 +181,32 @@ const HomePage = () => {
                                 >
                                     <Row gutter={10} style={{ width: '100%' }}>
                                         <Col md={11} sm={0} xs={0}>
-                                            <InputNumber
-                                                min={0}
-                                                placeholder="đ Từ"
-                                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                                style={{ width: '100%' }}
+                                            <Form.Item
+                                                name={["range", 'from']}
+                                            >
+                                                <InputNumber
+                                                    name="from"
+                                                    min={0}
+                                                    placeholder="đ Từ"
+                                                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                                    style={{ width: '100%' }}
 
-                                            />
+                                                />
+                                            </Form.Item>
                                         </Col>
                                         <Col md={2} sm={0} xs={0}>
                                             <div>-</div>
                                         </Col>
                                         <Col md={11} sm={0} xs={0}>
-                                            <InputNumber
-                                                name='to'
-                                                min={0}
-                                                placeholder="đ Đến"
-                                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                                style={{ width: '100%' }}
-                                            />
+                                            <Form.Item name={["range", 'to']}>
+                                                <InputNumber
+                                                    name='to'
+                                                    min={0}
+                                                    placeholder="đ Đến"
+                                                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </Form.Item>
                                         </Col>
                                     </Row>
                                     <div style={{ marginTop: '3em' }}>
@@ -229,34 +244,47 @@ const HomePage = () => {
                             </Form>
                         </div>
                     </Col>
-                    <Col md={20} xs={24} style={{ border: '1px solid blue' }}>
-                        <div>
-                            <Tabs defaultActiveKey="1" items={items} />
-                            <Row className='customize-row'>
-                                {listBook?.map((item, index) => {
-                                    return (
-                                        <div className="product-content" key={`book-${index}`}>
-                                            <img src={item.thumbnail} className="thumbnail" />
-                                            <div className='text' title={item.mainText}>{item.mainText}</div>
-                                            <div className='price'>
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.price ?? 0)}
+                    <Col md={20} xs={24}>
+                        <div style={{ borderRadius: '5px', margin: '20px 20px 20px 0px', padding: '15px', backgroundColor: '#fff' }}>
+                            <Spin tip="Loading" size="large" spinning={isLoading}>
+
+                                <Tabs
+                                    defaultActiveKey="sort=-sold"
+                                    items={items}
+                                    onChange={(activeKey) => handleChangeTab(activeKey)}
+                                />
+                                <Row className='customize-row'>
+                                    {listBook?.map((item, index) => {
+                                        return (
+                                            <div className="product-content" key={`book-${index}`}>
+                                                <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} className="thumbnail" />
+                                                <div className='text' title={item.mainText}>{item.mainText}</div>
+                                                <div className='price'>
+                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.price ?? 0)}
+                                                </div>
+                                                <div className='rating'>
+                                                    <Rate value={5} disabled style={{ color: '#ffce3d', fontSize: 10 }} />
+                                                    <span>Đã bán {item?.sold ?? 0}</span>
+                                                </div>
                                             </div>
-                                            <div className='rating'>
-                                                <Rate value={5} disabled style={{ color: '#ffce3d', fontSize: 10 }} />
-                                                <span>Đã bán {item?.sold ?? 0}</span>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </Row>
-                            <Divider />
-                            <div className="pagination">
-                                <Pagination defaultCurrent={6} total={500} />
-                            </div>
-                        </div >
+                                        )
+                                    })}
+                                </Row>
+
+                                <Divider />
+                                <div className="pagination">
+                                    <Pagination
+                                        current={meta.current}
+                                        total={meta.total}
+                                        pageSize={meta.pageSize}
+                                        onChange={(page, pageSize) => handleChangePage(page, pageSize)}
+                                    />
+                                </div>
+                            </Spin>
+                        </div>
                     </Col>
                 </Row>
-            </div>
+            </div >
 
         </>
     )
