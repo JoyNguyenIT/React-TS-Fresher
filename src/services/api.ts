@@ -71,6 +71,16 @@ export const getBooksTableAPI = (query: string) => {
     })
 }
 
+export const getBooksByIdAPI = (id: string) => {
+    const urlBackend = `/api/v1/book/${id}`;
+    return axios.get<IBackendRes<IBookTable>>(urlBackend, {
+        headers: {
+            delay: 3000
+        }
+    })
+}
+
+
 export const getCategoryBook = () => {
     const urlBackend = `/api/v1/database/category`;
     return axios.get<IBackendRes<string[]>>(urlBackend)

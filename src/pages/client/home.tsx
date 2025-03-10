@@ -6,6 +6,7 @@ import { useForm } from "antd/es/form/Form";
 import { TabsProps } from "antd/lib";
 import { useEffect, useState } from "react";
 import { getBooksTableAPI, getCategoryBook } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 
 type FieldType = {
     range: {
@@ -56,6 +57,7 @@ const HomePage = () => {
     const [checkedCategory, setCheckedCategory] = useState<String>()
     const [rangePriceFilter, setRangePriceFilter] = useState<String>()
     const [activeKeyTab, setActiveKeyTab] = useState<String>()
+    const naigate = useNavigate()
     const fetchBookPaginate = async () => {
         setIsLoading(true)
         let query = `current=${currentPage}&pageSize=${pageSize}`
@@ -256,7 +258,10 @@ const HomePage = () => {
                                 <Row className='customize-row'>
                                     {listBook?.map((item, index) => {
                                         return (
-                                            <div className="product-content" key={`book-${index}`}>
+                                            <div className="product-content"
+                                                key={`book-${index}`}
+                                                onClick={() => naigate(`/book/${item._id}`)}
+                                            >
                                                 <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} className="thumbnail" />
                                                 <div className='text' title={item.mainText}>{item.mainText}</div>
                                                 <div className='price'>
