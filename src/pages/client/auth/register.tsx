@@ -48,7 +48,6 @@ const RegisterPage: React.FC = () => {
                 <Form
                     name="basic"
                     labelCol={{ span: 24 }}
-                    wrapperCol={{ span: 24 }}
                     style={{ maxWidth: 600 }}
                     initialValues={{ remember: true }}
                     onFinish={onFinish}
@@ -97,7 +96,7 @@ const RegisterPage: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item label={null}>
-                        <Button type="primary" htmlType="submit" loading={isSubmit}>
+                        <Button type="primary" htmlType="submit" loading={isSubmit} className='btn-regis'>
                             Đăng ký
                         </Button>
                     </Form.Item>

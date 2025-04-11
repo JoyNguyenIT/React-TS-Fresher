@@ -11,9 +11,8 @@
         flex-wrap: wrap;
 
         .product-content {
-            border: 1px solid #d5d0d0;
-            margin: 2px 3px;
-
+            margin: 10px 3px;
+            box-shadow: 2px 2px 2px #e1e1e1;
             width: calc(20% - 8px);
 
             &:hover {

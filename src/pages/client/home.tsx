@@ -1,12 +1,13 @@
-import { FilterTwoTone, RedoOutlined, ReloadOutlined } from "@ant-design/icons"
+import { FilterTwoTone, ReloadOutlined } from "@ant-design/icons"
 import 'styles/home.scss'
-import { Button, Checkbox, Col, Divider, Flex, Form, Image, InputNumber, Pagination, Rate, Row, Spin, Tabs } from 'antd';
-import type { FormProps, GetProp } from 'antd';
-import { useForm } from "antd/es/form/Form";
+import { Button, Checkbox, Col, Divider, Form, InputNumber, Pagination, Rate, Row, Spin, Tabs } from 'antd';
+import type { FormProps } from 'antd';
 import { TabsProps } from "antd/lib";
 import { useEffect, useState } from "react";
 import { getBooksTableAPI, getCategoryBook } from "@/services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import MobileFilter from "@/components/client/mobile.filter";
+import { isMobile } from 'react-device-detect';
 
 type FieldType = {
     range: {
@@ -43,10 +44,11 @@ const items: TabsProps['items'] = [
 
 const HomePage = () => {
     const [form] = Form.useForm()
+    const { searchBook } = useOutletContext() as any
     const [listBook, setListBook] = useState<IBookTable[]>([]);
     const [meta, setMeta] = useState({
         current: 1,
-        pageSize: 5,
+        pageSize: 10,
         pages: 0,
         total: 0
     });
@@ -57,10 +59,14 @@ const HomePage = () => {
     const [checkedCategory, setCheckedCategory] = useState<String>()
     const [rangePriceFilter, setRangePriceFilter] = useState<String>()
     const [activeKeyTab, setActiveKeyTab] = useState<String>()
+    const [openFilter, setOpenFilter] = useState<boolean>(false)
     const naigate = useNavigate()
     const fetchBookPaginate = async () => {
         setIsLoading(true)
         let query = `current=${currentPage}&pageSize=${pageSize}`
+        if (searchBook) {
+            query += `&mainText=/${searchBook}/i`;
+        }
         if (rangePriceFilter) {
             query += rangePriceFilter
         }
@@ -70,6 +76,7 @@ const HomePage = () => {
         if (activeKeyTab) {
             query += `&${activeKeyTab}`
         }
+
         else {
             query += '&sort=-sold'
         }
@@ -94,7 +101,7 @@ const HomePage = () => {
 
     useEffect(() => {
         fetchBookPaginate()
-    }, [pageSize, currentPage, checkedCategory, rangePriceFilter, activeKeyTab])
+    }, [pageSize, currentPage, checkedCategory, rangePriceFilter, activeKeyTab, searchBook])
     const handleChangePage = (page: number, size: number) => {
         if (page !== currentPage) setCurrentPage(page)
         if (size !== pageSize) setPageSize(size)
@@ -134,7 +141,7 @@ const HomePage = () => {
             <div className="homepage-content" >
                 <Row gutter={[20, 20]} style={{ backgroundColor: '#efefef' }}>
                     <Col md={4} sm={0} xs={0} style={{ padding: '20px' }}>
-                        <div style={{ maxWidth: 1440, padding: '10px', borderRadius: '5px', backgroundColor: '#fff', marginLeft: '10px' }}>
+                        <div style={{ minWidth: 200, padding: '10px', borderRadius: '5px', backgroundColor: '#fff', marginLeft: '10px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span>
                                     <FilterTwoTone />
@@ -248,49 +255,66 @@ const HomePage = () => {
                     </Col>
                     <Col md={20} xs={24}>
                         <div style={{ borderRadius: '5px', margin: '20px 20px 20px 0px', padding: '15px', backgroundColor: '#fff' }}>
-                            <Spin tip="Loading" size="large" spinning={isLoading}>
-
-                                <Tabs
-                                    defaultActiveKey="sort=-sold"
-                                    items={items}
-                                    onChange={(activeKey) => handleChangeTab(activeKey)}
-                                />
-                                <Row className='customize-row'>
-                                    {listBook?.map((item, index) => {
-                                        return (
-                                            <div className="product-content"
-                                                key={`book-${index}`}
-                                                onClick={() => naigate(`/book/${item._id}`)}
-                                            >
-                                                <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} className="thumbnail" />
-                                                <div className='text' title={item.mainText}>{item.mainText}</div>
-                                                <div className='price'>
-                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.price ?? 0)}
-                                                </div>
-                                                <div className='rating'>
-                                                    <Rate value={5} disabled style={{ color: '#ffce3d', fontSize: 10 }} />
-                                                    <span>Đã bán {item?.sold ?? 0}</span>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </Row>
-
-                                <Divider />
-                                <div className="pagination">
-                                    <Pagination
-                                        current={meta.current}
-                                        total={meta.total}
-                                        pageSize={meta.pageSize}
-                                        onChange={(page, pageSize) => handleChangePage(page, pageSize)}
+                            <div style={isMobile ? { width: "100%" } : { minWidth: 1100 }}>
+                                <Spin tip="Loading" size="large" spinning={isLoading}>
+                                    <Tabs
+                                        defaultActiveKey="sort=-sold"
+                                        items={items}
+                                        onChange={(activeKey) => handleChangeTab(activeKey)}
                                     />
-                                </div>
-                            </Spin>
+                                    <Row>
+                                        <Col md={0} xs={24}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                                                <span onClick={() => setOpenFilter(true)}>
+                                                    <FilterTwoTone />
+                                                    <span style={{ fontWeight: '500', marginLeft: 5 }}>Lọc</span>
+                                                </span>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                    <Row className='customize-row'>
+                                        {listBook?.map((item, index) => {
+                                            return (
+                                                <div className="product-content"
+                                                    key={`book-${index}`}
+                                                    onClick={() => naigate(`/book/${item._id}`)}
+                                                >
+                                                    <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} className="thumbnail" />
+                                                    <div className='text' title={item.mainText}>{item.mainText}</div>
+                                                    <div className='price'>
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.price ?? 0)}
+                                                    </div>
+                                                    <div className='rating'>
+                                                        <Rate value={5} disabled style={{ color: '#ffce3d', fontSize: 10 }} />
+                                                        <span>Đã bán {item?.sold ?? 0}</span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </Row>
+
+                                    <Divider />
+                                    <div className="pagination">
+                                        <Pagination
+                                            current={meta.current}
+                                            total={meta.total}
+                                            pageSize={meta.pageSize}
+                                            onChange={(page, pageSize) => handleChangePage(page, pageSize)}
+                                        />
+                                    </div>
+                                </Spin>
+                            </div>
                         </div>
                     </Col>
                 </Row>
             </div >
-
+            <MobileFilter
+                listCategory={listCategory}
+                openFilter={openFilter}
+                setOpenFilter={setOpenFilter}
+                onFinish={onFinish}
+                handleChangeFilter={handleChangeFilter}
+            />
         </>
     )
 }

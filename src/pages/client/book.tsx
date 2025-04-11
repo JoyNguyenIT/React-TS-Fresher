@@ -1,5 +1,6 @@
 import BookDetail from "@/components/client/book.detail";
-import { getBooksByIdAPI } from "@/services/api";
+import LoadingBookSkeleton from "@/components/client/book.loading";
+import { getBookByIdAPI } from "@/services/api";
 import { App } from "antd";
 import useMessage from "antd/es/message/useMessage";
 import { useEffect, useState } from "react";
@@ -9,13 +10,13 @@ const BookPage = () => {
     const { id } = useParams();
     const { notification } = App.useApp();
     const [currentBook, setCurrentBook] = useState<IBookTable | null>(null)
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     useEffect(() => {
         if (id) {
             setIsLoading(true)
             const fecthBookById = async () => {
-                const res = await getBooksByIdAPI(id);
+                const res = await getBookByIdAPI(id);
                 if (res && res.data) {
                     setCurrentBook(res.data)
                 }
@@ -33,10 +34,13 @@ const BookPage = () => {
 
     return (
         <>
-            <BookDetail
-                currentBook={currentBook}
-            >
-            </BookDetail>
+            {isLoading
+                ? <LoadingBookSkeleton />
+                :
+                <BookDetail
+                    currentBook={currentBook}
+                />
+            }
         </>
     )
 }

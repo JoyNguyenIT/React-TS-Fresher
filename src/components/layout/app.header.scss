@@ -3,6 +3,7 @@
     display: flex;
     gap: 25px;
     align-items: center;
+    padding: 10px;
 
     .title-icon-name {
         display: flex;
@@ -131,6 +132,7 @@
 
     .shopping-cart {
         margin-right: 40px;
+        cursor: pointer;
     }
 
 

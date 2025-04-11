@@ -59,7 +59,6 @@ const LoginPage: React.FC = () => {
                 <Form
                     name="basic"
                     labelCol={{ span: 24 }}
-                    wrapperCol={{ span: 24 }}
                     style={{ maxWidth: 600 }}
                     initialValues={{ remember: true }}
                     onFinish={onFinish}

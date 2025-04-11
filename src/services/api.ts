@@ -71,7 +71,7 @@ export const getBooksTableAPI = (query: string) => {
     })
 }
 
-export const getBooksByIdAPI = (id: string) => {
+export const getBookByIdAPI = (id: string) => {
     const urlBackend = `/api/v1/book/${id}`;
     return axios.get<IBackendRes<IBookTable>>(urlBackend, {
         headers: {
@@ -86,7 +86,7 @@ export const getCategoryBook = () => {
     return axios.get<IBackendRes<string[]>>(urlBackend)
 }
 
-export const UploadBookImgAPI = (fileImg: any) => {
+export const UploadBookImgAPI = (fileImg: any, folder: string) => {
     const bodyFormData = new FormData();
     bodyFormData.append('fileImg', fileImg)
     return axios({
@@ -95,7 +95,7 @@ export const UploadBookImgAPI = (fileImg: any) => {
         data: bodyFormData,
         headers: {
             "Content-Type": "multipart/form-data",
-            "upload-type": "book"
+            "upload-type": folder
         }
     })
 }
@@ -132,4 +132,70 @@ export const putUpdateBookAPI = (
 export const DeleteBookAPI = (_id: string) => {
     const urlBackend = `api/v1/book/${_id}`
     return axios.delete<IBackendRes<IRegister>>(urlBackend)
+}
+
+export const createOrderAPI = (
+    name: string,
+    address: string,
+    phone: string,
+    totalPrice: number,
+    detail: Product[]
+) => {
+    const urlBackend = "/api/v1/order/"
+    return axios.post<IBackendRes<IBookTable>>(urlBackend, { name, address, phone, totalPrice, detail }, {
+        headers: {
+            delay: 3000
+        }
+    })
+
+}
+export const getHistoryAPI = () => {
+    const urlBackend = `/api/v1/history`;
+    return axios.get<IBackendRes<IHistory[]>>(urlBackend, {
+        headers: {
+            delay: 3000
+        }
+    })
+}
+
+export const putUpdateInforUserAPI = (
+    _id: string,
+    fullName: string,
+    phone: string,
+    avatar: string | undefined
+) => {
+    const urlBackend = `/api/v1/user/`
+    return axios.put<IBackendRes<IUser>>(urlBackend, { _id, fullName, phone, avatar })
+}
+
+
+export const changePasswordAPI = (
+    email: string,
+    oldpass: string,
+    newpass: string
+) => {
+    let urlBackend = 'api/v1/user/change-password';
+    return axios.post<IBackendRes<String>>(urlBackend, { email, oldpass, newpass }, {
+        headers: {
+            delay: 3000
+        }
+    })
+}
+
+export const getDashboardAPI = () => {
+    const urlBackend = 'api/v1/database/dashboard';
+    return axios.get<IBackendRes<IDashBoard>>(urlBackend, {
+        headers: {
+            delay: 3000
+        }
+    })
+}
+
+export const getOrderTableAPI = (query: string) => {
+    const urlBackend = `/api/v1/order?${query}`;
+    return axios.get<IBackendRes<IModelPaginate<IHistory>>>(urlBackend, {
+        headers: {
+            delay: 3000
+        }
+    })
 }

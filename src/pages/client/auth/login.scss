@@ -35,3 +35,15 @@
     }
 
 }
+
+@media screen and (max-width: 600px) {
+    .login-page {
+        min-height: 70vh;
+    }
+}
+
+@media screen and (max-width: 900px) and (min-width: 601px) {
+    .login-page {
+        min-height: 60vh;
+    }
+}

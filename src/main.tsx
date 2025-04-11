@@ -16,8 +16,9 @@ import DashBoardAdmin from '@/components/admin/funt/dashboard';
 import ManageBook from 'components/admin/funt/manage.book';
 import ManageUser from '@/components/admin/funt/manage.user';
 import ManageOrder from '@/components/admin/funt/manage.order';
-import History from 'pages/admin/history';
+import History from '@/pages/client/history';
 import enUS from 'antd/locale/en_US';
+import OrderPage from './pages/client/order';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
         element: <AboutPage />,
       },
       {
+        path: "/order",
+        element: <OrderPage />,
+      },
+      {
         path: "/checkout",
         element: <ProtectedRoute>
           <div>Checkout page</div>
@@ -44,7 +49,9 @@ const router = createBrowserRouter([
       },
       {
         path: "/history",
-        element: <History />
+        element: <ProtectedRoute>
+          <History />
+        </ProtectedRoute>
       },
 
     ]

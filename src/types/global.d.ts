@@ -83,4 +83,36 @@ declare global {
         createdAt: Date,
         updatedAt: Date,
     }
+
+    interface Product {
+        _id: string,
+        quantity: number,
+        details: IBookTable
+    }
+
+    interface IPayment {
+        name: string,
+        address: string,
+        phone: string,
+        totalPrice: number,
+        detail: Product[]
+    }
+
+    interface IHistory {
+        createdAt: string,
+        name: string,
+        address: string,
+        phone: string,
+        totalPrice: number,
+        detail: Product[],
+        email: string,
+        updatedAt: string,
+        userId: string
+        _id: string
+    }
+
+    interface IDashBoard {
+        countOrder: number,
+        countUser: number
+    }
 }

@@ -15,7 +15,7 @@ interface FieldType {
     category: string;
     price: number;
     quantity: number;
-    slider: File[];
+    slider: File[] | undefined;
     thumbnail: File[];
     sold: number
 };
@@ -130,7 +130,7 @@ const FormUpdateBook = (props: IProps) => {
     const handleUploadFile = async (options: any, typeImg: UserUploadType) => {
         const { onSuccess, file } = options
         onSuccess("Ok")
-        const res = await UploadBookImgAPI(options.file)
+        const res = await UploadBookImgAPI(options.file, "book")
         if (res && res.data) {
             const uploadFile: any = {
                 uid: file.uid,

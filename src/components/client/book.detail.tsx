@@ -1,11 +1,13 @@
-import { App, Col, Rate, Row } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { App, Breadcrumb, Col, Rate, Row } from "antd";
+import { useContext, useEffect, useRef, useState } from "react";
 import 'src/styles/book.scss'
 import ImageGallery from "react-image-gallery";
 import "react-image-gallery/styles/css/image-gallery.css";
-import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { HomeOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { FaCartPlus } from "react-icons/fa";
 import ModalImage from "./modal.image";
+import { useCurrentApp } from "../context/app.context";
+import { Link, useNavigate } from "react-router-dom";
 
 interface IProps {
     currentBook: IBookTable | null
@@ -13,9 +15,12 @@ interface IProps {
 
 type USerAction = 'MINUS' | 'PLUS'
 
+
 const BookDetail = (props: IProps) => {
     const { currentBook } = props
-
+    const { setCart, user } = useCurrentApp()
+    const { message } = App.useApp()
+    const navigate = useNavigate()
     const [imageGallery, setImageGallery] = useState<{
         original: string;
         thumbnail: string;
@@ -26,6 +31,7 @@ const BookDetail = (props: IProps) => {
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const refImages = useRef<ImageGallery>(null)
+
 
     const showModal = () => {
         setCurrentIndex(refImages?.current?.getCurrentIndex() ?? 0)
@@ -48,6 +54,43 @@ const BookDetail = (props: IProps) => {
             }
         }
 
+    }
+
+    const handleAddToCart = (isBuyNow = false) => {
+        if (!user) {
+            message.error('Bạn cần đăng nhập để tiếp tục')
+            return;
+        }
+        const cartStorage = localStorage.getItem("carts");
+        if (cartStorage && currentBook) {
+            const carts = JSON.parse(cartStorage) as Product[];
+            let isExistIndex = carts.findIndex((i) => i._id == currentBook._id);
+            if (isExistIndex <= -1) {
+                carts.push({
+                    _id: currentBook._id,
+                    quantity: currentQuatity,
+                    details: currentBook
+                })
+            }
+            else {
+                carts[isExistIndex].quantity = carts[isExistIndex].quantity + currentQuatity
+            }
+            localStorage.setItem("carts", JSON.stringify(carts))
+            setCart(carts)
+            message.success("Thêm vào giỏ hàng thành công!")
+        } else {
+            const data = [{
+                _id: currentBook?._id!,
+                quantity: currentQuatity,
+                details: currentBook!
+            }]
+            localStorage.setItem("carts", JSON.stringify(data))
+            setCart(data)
+        }
+
+        if (isBuyNow) {
+            navigate('/order');
+        }
     }
 
     useEffect(() => {
@@ -88,7 +131,20 @@ const BookDetail = (props: IProps) => {
                 minHeight: "calc(100vh - 150px)",
                 marginTop: '10px'
             }}>
+                <Breadcrumb
+                    separator=">"
+                    items={[
+                        {
+                            title: <Link to={"/"}> <HomeOutlined /></Link>,
+                        },
+
+                        {
+                            title: 'Xem chi tiết sách',
+                        },
+                    ]}
+                />
                 <div className="book-detail-container">
+
                     <Row gutter={[20, 20]}
                     >
                         <Col md={10} sm={24}>
@@ -100,6 +156,7 @@ const BookDetail = (props: IProps) => {
                                 autoPlay={false}
                                 showBullets={false}
                                 onClick={showModal}
+                                showNav={false}
                             />
                         </Col>
                         <Col md={14} sm={24}>
@@ -132,10 +189,10 @@ const BookDetail = (props: IProps) => {
                             </div>
                             <div className="cart">
                                 <span className="left">
-                                    <button><FaCartPlus /> Thêm vào giỏ hàng</button>
+                                    <button onClick={() => handleAddToCart()}><FaCartPlus /> Thêm vào giỏ hàng</button>
                                 </span>
                                 <span className="right">
-                                    <button>Mua ngay</button>
+                                    <button onClick={() => handleAddToCart(true)}>Mua ngay</button>
                                 </span>
                             </div>
                         </Col>
@@ -147,8 +204,8 @@ const BookDetail = (props: IProps) => {
                 setIsModalOpen={setIsModalOpen}
                 images={imageGallery}
                 currentIndex={currentIndex}
-            >
-            </ModalImage>
+                title={currentBook?.mainText}
+            />
         </>
     )
 }

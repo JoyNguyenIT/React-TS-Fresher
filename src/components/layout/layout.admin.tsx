@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     AppstoreOutlined,
     DollarOutlined,
@@ -13,7 +13,7 @@ import {
 import { Avatar, Button, Divider, Dropdown, Layout, Menu, notification, Space, theme, } from 'antd';
 import type { MenuProps } from 'antd';
 import { Footer } from 'antd/es/layout/layout';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useCurrentApp } from 'components/context/app.context';
 import './layout.admin.scss'
 import { logoutAPI } from '@/services/api';
@@ -79,12 +79,14 @@ const items: MenuItem[] = [
 
 const LayoutAdmin: React.FC = () => {
     const { urlAvatar, user, setIsAuthenticated, setUser } = useCurrentApp()
-
+    const navigate = useNavigate()
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: { borderRadiusLG },
     } = theme.useToken();
-
+    useEffect(() => {
+        if (user) navigate('dashboard')
+    }, [])
     const handleLogout = async () => {
         const res = await logoutAPI()
         if (res.data) {

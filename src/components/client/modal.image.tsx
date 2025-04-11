@@ -11,13 +11,14 @@ interface IProps {
         originalClass: string,
         thumbnailClass: string
     }[],
-    currentIndex: number
+    currentIndex: number,
+    title: string | undefined
 
 }
 
 const ModalImage = (props: IProps) => {
 
-    const { isModalOpen, setIsModalOpen, images, currentIndex } = props
+    const { isModalOpen, setIsModalOpen, images, currentIndex, title } = props
     const refImages = useRef<ImageGallery>(null)
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -32,6 +33,7 @@ const ModalImage = (props: IProps) => {
     return (
         <>
             <Modal
+                title={title}
                 open={isModalOpen}
                 onOk={handleOk}
                 onCancel={handleCancel}>
@@ -46,7 +48,8 @@ const ModalImage = (props: IProps) => {
                             startIndex={currentIndex}
                             ref={refImages}
                             onSlide={(i) => setActiveIndex(i)}
-                            slideDuration={0} //duration between slices
+                            slideDuration={0}
+                            showNav={false}
                         />
                     </Col>
                 </Row>
