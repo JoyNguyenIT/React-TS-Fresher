@@ -45,7 +45,7 @@ const Payment = (props: Iprops) => {
                     quantity: book.quantity,
                     _id: book._id
                 })
-            });
+            }) as IDetailBook[];
             if (details && details.length > 0) {
                 const res = await createOrderAPI(fullName, address, phone, sumPrice, details);
                 if (res && res.data) {

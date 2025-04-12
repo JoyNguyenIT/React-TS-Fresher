@@ -104,7 +104,7 @@ declare global {
         address: string,
         phone: string,
         totalPrice: number,
-        detail: Product[],
+        detail: IDetailBook[],
         email: string,
         updatedAt: string,
         userId: string
@@ -114,5 +114,11 @@ declare global {
     interface IDashBoard {
         countOrder: number,
         countUser: number
+    }
+
+    interface IDetailBook {
+        bookName: string,
+        quantity: number,
+        _id: string
     }
 }

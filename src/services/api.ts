@@ -139,7 +139,7 @@ export const createOrderAPI = (
     address: string,
     phone: string,
     totalPrice: number,
-    detail: Product[]
+    detail: IDetailBook[]
 ) => {
     const urlBackend = "/api/v1/order/"
     return axios.post<IBackendRes<IBookTable>>(urlBackend, { name, address, phone, totalPrice, detail }, {
