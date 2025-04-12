@@ -74,7 +74,7 @@ const FormAddBook = (props: IProps) => {
     const handleUploadFile = async (options: any, typeImg: UserUploadType) => {
         const { onSuccess, file } = options
         onSuccess("Ok")
-        const res = await UploadBookImgAPI(options.file, "book")
+        const res = await UploadBookImgAPI(options.file)
         if (res && res.data) {
             const uploadFile: any = {
                 uid: file.uid,
